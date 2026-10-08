@@ -32,7 +32,11 @@ class EarlyStopper:
         self.mode = cfg.mode
         self.patience = cfg.patience
         self.min_delta = cfg.min_delta
-        self.best_value = 0.0 if cfg.mode == "max" else float("inf")
+        # Not 0.0. A monitor in [-1, 1] such as val_mcc starts below zero on a
+        # model that has learned nothing, and a floor of 0.0 means the first
+        # real epoch never counts as an improvement, so best_epoch stays unset
+        # and the run stops at patience with no best checkpoint to restore.
+        self.best_value = float("-inf") if cfg.mode == "max" else float("inf")
         self.best_epoch = -1
         self.epochs_without_improvement = 0
         self.stopped = False

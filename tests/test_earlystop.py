@@ -91,6 +91,26 @@ def test_mode_min_treats_a_fall_as_an_improvement():
     assert verdicts[-1].best_epoch == 2
 
 
+def test_a_monitor_that_starts_negative_still_improves():
+    """The regression test for the bug this rule shipped with.
+
+    ``best_value`` was initialised to 0.0 for mode=max, which is fine for
+    macro F1 and wrong for anything that can be negative. With val_mcc at
+    -0.4 then -0.1, neither epoch beat 0.0, so nothing was ever recorded as
+    an improvement: best_epoch stayed -1, the run stopped at patience, and
+    there was no best state to restore. The floor is -inf now.
+    """
+    cfg = EarlyStoppingConfig(monitor="val_mcc", mode="max", patience=2, min_delta=0.0)
+    stopper = EarlyStopper(cfg)
+    first = stopper.update(1, {"val_mcc": -0.4})
+    assert first.improved
+    assert first.best_epoch == 1
+    second = stopper.update(2, {"val_mcc": -0.1})
+    assert second.improved
+    assert second.best_value == -0.1
+    assert not second.should_stop
+
+
 def test_mode_min_starts_from_positive_infinity():
     cfg = EarlyStoppingConfig(monitor="val_loss", mode="min", patience=2)
     stopper = EarlyStopper(cfg)
