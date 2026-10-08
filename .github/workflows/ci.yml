@@ -1,0 +1,102 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  # The suite's own conftest sets these too. Setting them at the job level as
+  # well means a download attempt fails even from a step that does not go
+  # through pytest.
+  HF_HUB_OFFLINE: "1"
+  TRANSFORMERS_OFFLINE: "1"
+  MLFLOW_DISABLE_AGENT_HINT: "1"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5.3.0
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -e ".[dev]"
+
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: pytest -q
+
+      # The pure half on its own. If a torch or transformers import ever moves
+      # to module scope, the offline env vars in conftest.py start arriving
+      # after huggingface_hub has read them, and this is the step that would
+      # still pass while the guarantee had quietly gone.
+      - name: the pure suite needs no model
+        run: pytest -q -m "not torch"
+
+      - name: nothing was downloaded
+        run: |
+          if [ -d "$HOME/.cache/huggingface" ]; then
+            found=$(find "$HOME/.cache/huggingface" -type f | wc -l)
+            echo "files in the hub cache: $found"
+            test "$found" -eq 0
+          else
+            echo "no hub cache at all"
+          fi
+
+  experiment:
+    # The code can be right while the recorded split and the README disagree
+    # with it. These steps run the commands the README gives and check the
+    # numbers it quotes.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5.3.0
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -e ".[dev]"
+
+      - name: the base config refuses to run on its own
+        run: |
+          code=0
+          ft config configs/base.toml > /dev/null 2>&1 || code=$?
+          test "$code" -eq 2
+
+      - name: the committed split is what the code builds from the corpus
+        run: |
+          ft split configs/smoke.toml | tee split.txt
+          grep -q "unchanged" split.txt
+          grep -q "thin: validation/cancel has 1" split.txt
+
+      # The record is a pure function of the corpus ids, the salt and the
+      # ratios, so rebuilding it on a different machine and a different OS has
+      # to produce the same bytes. It was committed from an arm64 mac.
+      - name: rebuilding the split changes no bytes
+        run: |
+          ft split configs/smoke.toml --force > /dev/null
+          git diff --exit-code -- splits/
+
+      - name: the smoke run trains, stops early and saves an adapter
+        run: |
+          ft train configs/smoke.toml | tee train.txt
+          grep -q "1156 trainable of 45320" train.txt
+          grep -q "1024 adapter, 132 head" train.txt
+          grep -q "best epoch   1" train.txt
+          grep -q "has not improved" train.txt
+          grep -q "macro_f1 0.1250" train.txt
+          test -f runs/intents-v1-*/adapter/adapter_model.safetensors
+
+      - name: the saved adapter scores what training reported
+        run: |
+          ft eval configs/smoke.toml | tee eval.txt
+          grep -q "macro_f1 0.1250" eval.txt
+          grep -q "accuracy 0.3333" eval.txt
+
+      - name: a stale split stops a run instead of training on it
+        run: |
+          echo '{"id": "x-01", "text": "a new message", "label": "billing"}' >> data/intents.jsonl
+          code=0
+          ft train configs/smoke.toml > /dev/null 2>&1 || code=$?
+          test "$code" -eq 1
