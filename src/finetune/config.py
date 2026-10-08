@@ -288,6 +288,19 @@ def _validate(cfg: Config) -> None:
         raise bad("early_stopping.patience", "must be >= 1")
     if cfg.early_stopping.min_delta < 0:
         raise bad("early_stopping.min_delta", "must be >= 0")
+    if cfg.tracking.enabled and "://" not in cfg.tracking.uri:
+        # MLflow 3 refuses a bare filesystem tracking store: the FileStore is
+        # in maintenance mode and its constructor raises unless
+        # MLFLOW_ALLOW_FILE_STORE is set. Caught here because the alternative
+        # is a twenty line traceback out of mlflow's store registry, thrown
+        # after the model has been built.
+        raise bad(
+            "tracking.uri",
+            f"needs a scheme, got {cfg.tracking.uri!r}. Use "
+            f"sqlite:///runs/mlflow.db for a local file, or http://host:5000 "
+            f"for a server",
+        )
+
     if not cfg.early_stopping.monitor.startswith("val_"):
         # Stopping on a training metric is not early stopping. Training loss
         # falls monotonically for a while whatever the model is doing to the

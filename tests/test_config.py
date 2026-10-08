@@ -124,6 +124,23 @@ def test_early_stopping_on_a_training_metric_is_refused(project: Path):
     assert "trainmon.toml" in str(exc.value)
 
 
+def test_bare_tracking_path_is_refused_only_when_tracking_is_on(project: Path):
+    off = write(
+        project / "configs" / "off.toml",
+        'extends = "smoke.toml"\n[tracking]\nuri = "runs/mlruns"\n',
+    )
+    assert load_config(off).tracking.uri == "runs/mlruns"
+
+    on = write(
+        project / "configs" / "on.toml",
+        'extends = "smoke.toml"\n[tracking]\nenabled = true\nuri = "runs/mlruns"\n',
+    )
+    with pytest.raises(ConfigError) as exc:
+        load_config(on)
+    assert "needs a scheme" in str(exc.value)
+    assert "sqlite:///" in str(exc.value)
+
+
 def test_fingerprint_is_stable_and_ignores_tracking(project: Path):
     first = load_config(project / "configs" / "smoke.toml")
     moved = write(

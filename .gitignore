@@ -15,6 +15,12 @@ dist/
 # checkpoint nobody can tell the provenance of.
 runs/
 
+# MLflow's own default artifact root. The tracker sets the experiment's
+# artifact location under runs/ instead, so this should stay empty; it is here
+# because an experiment created any other way will put it back.
+mlruns/
+mlartifacts/
+
 # Hugging Face caches, if a real checkpoint is ever pulled.
 .cache/
 hf_cache/

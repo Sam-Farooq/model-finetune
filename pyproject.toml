@@ -10,6 +10,9 @@ name = "model-finetune"
 version = "0.2.3"
 description = "A LoRA fine-tune of a small sequence classifier, driven by config and seeded once"
 requires-python = ">=3.11"
+# Floors, not ranges, except where a major version changed behaviour this
+# code depends on. Both caps below are there because something was actually
+# hit, not as a precaution.
 dependencies = [
     "torch>=2.4.0",
     # 5.x only. On transformers 5 the Bert tokenizers ignore a vocab_file
@@ -18,7 +21,11 @@ dependencies = [
     "transformers>=5.0.0,<6.0.0",
     "peft>=0.13.0",
     "scikit-learn>=1.5.0",
-    "mlflow>=2.16.0",
+    # 3.x only. MLflow 3 put the filesystem tracking store in
+    # "maintenance mode" and raises on a bare path, which is why tracking.uri
+    # must carry a scheme and why the config validator checks for one. That
+    # check would wrongly reject a working 2.x config.
+    "mlflow>=3.0.0",
     "numpy>=1.26.0",
 ]
 

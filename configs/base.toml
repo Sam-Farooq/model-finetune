@@ -41,4 +41,8 @@ min_delta = 0.002
 [tracking]
 enabled = false
 experiment = "intent-lora"
-uri = "runs/mlruns"
+# A scheme, not a bare directory. MLflow 3 puts the filesystem tracking store
+# in maintenance mode and raises on a path like "runs/mlruns" unless
+# MLFLOW_ALLOW_FILE_STORE is set, so the default here is sqlite and the config
+# validator rejects a bare path with one line instead of a stack trace.
+uri = "sqlite:///runs/mlflow.db"

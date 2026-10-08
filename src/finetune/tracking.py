@@ -59,11 +59,21 @@ class NullTracker:
 class MlflowTracker:
     """MLflow, imported on construction rather than at module import."""
 
-    def __init__(self, uri: str, experiment: str) -> None:
+    def __init__(self, uri: str, experiment: str, artifact_root: str) -> None:
         import mlflow
 
         self._mlflow = mlflow
         mlflow.set_tracking_uri(uri)
+
+        # The artifact location has to be set when the experiment is created,
+        # because it is a property of the experiment and cannot be changed
+        # afterwards. Left to itself MLflow writes artifacts to ./mlruns even
+        # when the tracking store is sqlite somewhere else, which drops a
+        # second output directory into the project root. Everything a run
+        # produces belongs under one ignored path.
+        client = mlflow.MlflowClient()
+        if client.get_experiment_by_name(experiment) is None:
+            client.create_experiment(experiment, artifact_location=artifact_root)
         mlflow.set_experiment(experiment)
 
     @contextmanager
@@ -86,7 +96,8 @@ class MlflowTracker:
             self._mlflow.log_artifact(str(path))
 
 
-def make_tracker(cfg: Config) -> Tracker:
+def make_tracker(cfg: Config, root: Path | None = None) -> Tracker:
     if not cfg.tracking.enabled:
         return NullTracker()
-    return MlflowTracker(cfg.tracking.uri, cfg.tracking.experiment)
+    artifact_root = ((root or Path()) / cfg.train.out_dir / "mlartifacts").resolve()
+    return MlflowTracker(cfg.tracking.uri, cfg.tracking.experiment, artifact_root.as_uri())
