@@ -19,8 +19,11 @@ The class balance is deliberately uneven:
 | cancel | 8 |
 
 That is roughly three to one between the commonest and the rarest class, which
-is why the reported metric is macro F1 rather than accuracy, and why `cancel`
-is the class that shows up in `ft split --report` as too thin to validate on.
+is why the reported metric is macro F1 rather than accuracy, and why `ft split`
+warns that `cancel` is too thin to validate on: on the recorded split it lands
+1 row in validation and 1 in test, against a `min_per_label_per_split` of 3.
+`shipping` is flagged for the same reason, with 2 in each. Those warnings print
+every time the subcommand runs; there is no flag to ask for them.
 
 `billing` and `cancel` overlap on purpose. "cancel the trial, I do not want to
 be charged" is about money and about cancelling, and a bag of words cannot
