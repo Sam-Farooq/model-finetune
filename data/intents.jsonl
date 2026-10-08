@@ -1,0 +1,64 @@
+{"id": "b-01", "label": "billing", "text": "I was charged twice for the same month and need one of them back"}
+{"id": "b-02", "label": "billing", "text": "my invoice shows a different amount than the price on the plan page"}
+{"id": "b-03", "label": "billing", "text": "can you send me a receipt for the payment taken on the third"}
+{"id": "b-04", "label": "billing", "text": "the card on file expired and the renewal failed, how do I update it"}
+{"id": "b-05", "label": "billing", "text": "why is there a tax line on my invoice this month and not last month"}
+{"id": "b-06", "label": "billing", "text": "I upgraded mid month and want to know how the proration was worked out"}
+{"id": "b-07", "label": "billing", "text": "please refund the annual charge, I was still inside the trial window"}
+{"id": "b-08", "label": "billing", "text": "the payment went through on my bank statement but the account still says unpaid"}
+{"id": "b-09", "label": "billing", "text": "I need the invoices for the last six months for our finance team"}
+{"id": "b-10", "label": "billing", "text": "can we switch from monthly to annual billing without losing the current credit"}
+{"id": "b-11", "label": "billing", "text": "there is a charge from you I do not recognise on the fourteenth"}
+{"id": "b-12", "label": "billing", "text": "add our VAT number to the billing details so it appears on the invoice"}
+{"id": "b-13", "label": "billing", "text": "the discount code was applied to the first month only, was that intended"}
+{"id": "b-14", "label": "billing", "text": "I paid by bank transfer last week and nothing has been credited yet"}
+{"id": "b-15", "label": "billing", "text": "how do I change the billing email, the invoices go to someone who left"}
+{"id": "b-16", "label": "billing", "text": "we were billed for eleven seats and we only have eight people"}
+{"id": "b-17", "label": "billing", "text": "the price went up at renewal and nobody told us beforehand"}
+{"id": "b-18", "label": "billing", "text": "can I get a partial refund for the seats we removed halfway through"}
+{"id": "t-01", "label": "technical", "text": "the app closes itself the moment I open the reports tab"}
+{"id": "t-02", "label": "technical", "text": "I cannot sign in, it keeps saying my password is wrong after a reset"}
+{"id": "t-03", "label": "technical", "text": "uploads stop at ninety nine percent and then time out"}
+{"id": "t-04", "label": "technical", "text": "the export produces an empty file when I pick a date range over a year"}
+{"id": "t-05", "label": "technical", "text": "two factor codes are rejected even though the clock on my phone is right"}
+{"id": "t-06", "label": "technical", "text": "the dashboard shows a spinner forever on Safari but loads on Chrome"}
+{"id": "t-07", "label": "technical", "text": "search returns nothing for a term I can see on the record itself"}
+{"id": "t-08", "label": "technical", "text": "I get a five hundred error when saving a comment longer than a paragraph"}
+{"id": "t-09", "label": "technical", "text": "the webhook stopped firing some time on Tuesday with no change on our side"}
+{"id": "t-10", "label": "technical", "text": "notifications arrive hours late or arrive twice"}
+{"id": "t-11", "label": "technical", "text": "the mobile app crashes on launch since the last update"}
+{"id": "t-12", "label": "technical", "text": "my changes to a record are silently lost if two of us edit at once"}
+{"id": "t-13", "label": "technical", "text": "the API returns a token expired error immediately after I mint a new one"}
+{"id": "t-14", "label": "technical", "text": "importing a spreadsheet maps the columns to the wrong fields every time"}
+{"id": "t-15", "label": "technical", "text": "the filter resets itself whenever I navigate back to the list"}
+{"id": "t-16", "label": "technical", "text": "I cannot attach a PDF over four megabytes, it fails with no message"}
+{"id": "t-17", "label": "technical", "text": "the time zone on scheduled items is off by an hour since the weekend"}
+{"id": "t-18", "label": "technical", "text": "single sign on sends me back to the login page in a loop"}
+{"id": "t-19", "label": "technical", "text": "the integration shows connected but no records have synced for three days"}
+{"id": "t-20", "label": "technical", "text": "printing a report cuts off the right hand column"}
+{"id": "t-21", "label": "technical", "text": "the page is unusable on a phone, the buttons sit under the keyboard"}
+{"id": "t-22", "label": "technical", "text": "bulk editing forty rows applies the change to only the first page"}
+{"id": "t-23", "label": "technical", "text": "the audit log is missing the entries for yesterday afternoon"}
+{"id": "t-24", "label": "technical", "text": "dark mode makes the required field warnings unreadable"}
+{"id": "s-01", "label": "shipping", "text": "the tracking number has not moved in four days"}
+{"id": "s-02", "label": "shipping", "text": "my order says delivered and nothing arrived at reception"}
+{"id": "s-03", "label": "shipping", "text": "can I change the delivery address, it has not shipped yet"}
+{"id": "s-04", "label": "shipping", "text": "two of the three items came, the third is not in the box"}
+{"id": "s-05", "label": "shipping", "text": "how long does delivery take to Lahore once it leaves the warehouse"}
+{"id": "s-06", "label": "shipping", "text": "the courier left it outside in the rain and the box is soaked"}
+{"id": "s-07", "label": "shipping", "text": "I need this before Friday, is an expedited option available"}
+{"id": "s-08", "label": "shipping", "text": "the parcel was returned to sender and I do not know why"}
+{"id": "s-09", "label": "shipping", "text": "can you split the shipment so the in stock items come now"}
+{"id": "s-10", "label": "shipping", "text": "customs is asking for an invoice value and the paperwork is blank"}
+{"id": "s-11", "label": "shipping", "text": "the label on the box has someone else's name on it"}
+{"id": "s-12", "label": "shipping", "text": "I missed the delivery, how do I arrange another attempt"}
+{"id": "s-13", "label": "shipping", "text": "the order has been sitting at the sorting hub for a week"}
+{"id": "s-14", "label": "shipping", "text": "do you ship to a PO box or does it need a street address"}
+{"id": "c-01", "label": "cancel", "text": "please close my account and delete the data on it"}
+{"id": "c-02", "label": "cancel", "text": "I want to cancel the subscription before the next renewal date"}
+{"id": "c-03", "label": "cancel", "text": "we are not renewing this year, what notice do you need"}
+{"id": "c-04", "label": "cancel", "text": "turn off auto renew but leave the account open until it runs out"}
+{"id": "c-05", "label": "cancel", "text": "cancel the trial, I do not want to be charged on the seventh"}
+{"id": "c-06", "label": "cancel", "text": "I cancelled last month and the account is still active"}
+{"id": "c-07", "label": "cancel", "text": "take us down to the free tier at the end of the current period"}
+{"id": "c-08", "label": "cancel", "text": "stop my plan, we have moved to a different tool"}
