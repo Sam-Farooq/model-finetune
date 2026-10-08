@@ -35,6 +35,7 @@ thin: validation/cancel has 1, below min_per_label_per_split of 3
 thin: validation/shipping has 2, below min_per_label_per_split of 3
 thin: test/cancel has 1, below min_per_label_per_split of 3
 thin: test/shipping has 2, below min_per_label_per_split of 3
+A per-class score computed on a handful of rows moves in steps of 1/n. Read the macro average on this split knowing that.
 ```
 
 [splits/intents-v1.json](splits/intents-v1.json) is 77 lines and holds one
