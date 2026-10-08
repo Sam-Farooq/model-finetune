@@ -53,12 +53,37 @@ def test_vocab_keeps_digits_and_drops_punctuation():
 def test_the_tiny_model_builds_with_nothing_downloaded(smoke_config, corpus):
     texts = [example.text for example in corpus]
     tokenizer = build_tokenizer(smoke_config, texts)
-    assert tokenizer.vocab_size > 0
+    assert tokenizer.vocab_size == len(vocab_from_texts(texts))
 
     model = build_model(smoke_config, num_labels=4, vocab_size=tokenizer.vocab_size)
     assert model.config.num_hidden_layers == 2
     assert model.config.hidden_size == 32
     assert model.config.num_labels == 4
+
+
+@pytest.mark.torch
+def test_the_built_tokenizer_round_trips_real_words_rather_than_unknowns(
+    smoke_config, corpus
+):
+    """The failure that the vocab_file approach produced silently.
+
+    If the vocabulary does not load, every word encodes to [UNK] and training
+    still runs. So this asserts the opposite: a sentence from the corpus
+    survives the round trip.
+    """
+    texts = [example.text for example in corpus]
+    tokenizer = build_tokenizer(smoke_config, texts)
+    encoded = tokenizer("refund the annual charge")
+    unknown = tokenizer.convert_tokens_to_ids("[UNK]")
+    assert unknown not in encoded["input_ids"]
+    assert len(encoded["input_ids"]) == 6  # [CLS] + four words + [SEP]
+
+
+@pytest.mark.torch
+def test_a_word_not_in_the_training_texts_becomes_unknown(smoke_config):
+    tokenizer = build_tokenizer(smoke_config, ["refund the charge"])
+    unknown = tokenizer.convert_tokens_to_ids("[UNK]")
+    assert unknown in tokenizer("quantum chromodynamics")["input_ids"]
 
 
 @pytest.mark.torch
@@ -103,6 +128,31 @@ def test_resolve_targets_passes_the_names_through_when_they_all_match(smoke_conf
     tokenizer = build_tokenizer(smoke_config, [e.text for e in corpus])
     model = build_model(smoke_config, 4, tokenizer.vocab_size)
     assert resolve_targets(model, ["query", "value"]) == ["query", "value"]
+
+
+@pytest.mark.torch
+def test_fitting_the_vocabulary_on_the_whole_corpus_makes_a_bigger_model(
+    smoke_config, corpus, recorded_split
+):
+    """A test for the leak the vocabulary avoids.
+
+    Fitting on every text gives the embedding table rows for words that only
+    appear in validation and test. The model grows, and training would be
+    updating embeddings for words it is not supposed to have seen.
+    """
+    train_ids = set(recorded_split.ids("train"))
+    on_train = build_tokenizer(smoke_config, [e.text for e in corpus if e.id in train_ids])
+    on_everything = build_tokenizer(smoke_config, [e.text for e in corpus])
+    assert on_everything.vocab_size > on_train.vocab_size
+
+    leaked = parameter_report(
+        wrap_with_lora(build_model(smoke_config, 4, on_everything.vocab_size), smoke_config)
+    )
+    honest = parameter_report(
+        wrap_with_lora(build_model(smoke_config, 4, on_train.vocab_size), smoke_config)
+    )
+    assert leaked["total_parameters"] > honest["total_parameters"]
+    assert leaked["trainable_parameters"] == honest["trainable_parameters"]
 
 
 @pytest.mark.torch

@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any
 
 from .config import Config
@@ -42,23 +41,39 @@ class Bundle:
 
 
 def build_tokenizer(cfg: Config, train_texts: list[str]) -> Any:
-    """A real tokenizer for a real checkpoint, a word level one for the tiny
-    model, written out as a vocab.txt and read back in."""
+    """A real tokenizer for a real checkpoint, a built one for the tiny model.
+
+    The tiny path constructs a ``tokenizers`` WordLevel model in memory rather
+    than writing a ``vocab.txt`` and handing it to ``BertTokenizerFast``. That
+    was the first attempt and it does not work on transformers 5: the
+    ``vocab_file`` argument is accepted and the file is not read, so the
+    tokenizer comes back holding the five special tokens and every word in the
+    corpus encodes to ``[UNK]``. Nothing raises. The loop trains, the loss
+    falls a little, and every input is the same sequence of unknown tokens.
+    """
     if cfg.model.source == "pretrained":
         from transformers import AutoTokenizer
 
         return AutoTokenizer.from_pretrained(cfg.model.tokenizer or cfg.model.name)
 
-    import tempfile
-
-    from transformers import BertTokenizerFast
+    from tokenizers import Tokenizer, models, pre_tokenizers, processors
+    from transformers import PreTrainedTokenizerFast
 
     vocab = vocab_from_texts(train_texts)
-    directory = Path(tempfile.gettempdir()) / "finetune-tiny-tokenizer"
-    directory.mkdir(parents=True, exist_ok=True)
-    vocab_path = directory / "vocab.txt"
-    vocab_path.write_text("\n".join(vocab) + "\n")
-    return BertTokenizerFast(vocab_file=str(vocab_path), do_lower_case=True)
+    backend = Tokenizer(models.WordLevel(vocab=vocab, unk_token="[UNK]"))
+    backend.pre_tokenizer = pre_tokenizers.Whitespace()
+    backend.post_processor = processors.TemplateProcessing(
+        single="[CLS] $A [SEP]",
+        special_tokens=[("[CLS]", vocab["[CLS]"]), ("[SEP]", vocab["[SEP]"])],
+    )
+    return PreTrainedTokenizerFast(
+        tokenizer_object=backend,
+        unk_token="[UNK]",
+        pad_token="[PAD]",
+        cls_token="[CLS]",
+        sep_token="[SEP]",
+        mask_token="[MASK]",
+    )
 
 
 def build_model(cfg: Config, num_labels: int, vocab_size: int) -> Any:
