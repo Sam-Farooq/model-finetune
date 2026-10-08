@@ -1,0 +1,34 @@
+# Proves the loop runs with nothing downloaded: a two layer BERT built from a
+# config with random weights, and a word level tokenizer built from the
+# training texts. It learns nothing worth reporting. It exists so that the
+# training path is exercised in CI and by anyone who clones this without a
+# Hub token or a network.
+extends = "base.toml"
+
+[model]
+name = "bert-tiny-random"
+source = "random"
+hidden_size = 32
+num_hidden_layers = 2
+num_attention_heads = 2
+intermediate_size = 64
+
+[lora]
+# r 4 on a hidden size of 32 is already a quarter of the width. On this
+# architecture rank is not the constraint; the 35k parameter base is.
+r = 4
+alpha = 8
+dropout = 0.05
+target_modules = ["query", "value"]
+modules_to_save = ["classifier"]
+
+[train]
+epochs = 4
+lr = 5e-3
+head_lr = 5e-3
+
+[early_stopping]
+# A random base learns nothing in four epochs, so val_macro_f1 is flat and
+# patience fires on epoch 3 of the 4 asked for. That is the rule working on a
+# run that has nothing to find, which is the only thing this config proves.
+patience = 2

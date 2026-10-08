@@ -1,0 +1,26 @@
+# The experiment this repository is for. Needs a download: the first run pulls
+# distilbert-base-uncased from the Hub.
+extends = "base.toml"
+
+[model]
+name = "distilbert-base-uncased"
+source = "pretrained"
+
+[lora]
+r = 8
+alpha = 16
+dropout = 0.05
+# DistilBERT's attention projections are named q_lin, k_lin, v_lin, out_lin.
+# The names BERT uses (query, key, value) match nothing here, which is why
+# resolve_targets checks them against the model rather than trusting the file.
+target_modules = ["q_lin", "v_lin"]
+# Both head layers. DistilBERT's sequence classifier is pre_classifier then
+# classifier, and both are randomly initialised on a fresh checkpoint.
+modules_to_save = ["pre_classifier", "classifier"]
+
+[train]
+epochs = 20
+# Two orders of magnitude above a full fine-tune's 2e-5. See the README: the
+# adapter starts as the identity and has no pretrained weights to damage.
+lr = 3e-4
+head_lr = 1e-3

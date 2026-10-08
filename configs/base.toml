@@ -1,0 +1,44 @@
+# Shared by every experiment in this directory. Not runnable on its own: it
+# names no model, and model.name is required, so `ft config configs/base.toml`
+# exits 2 and says so. That is the intent. A base config that happens to run
+# becomes the one people run.
+
+[data]
+corpus = "data/intents.jsonl"
+text_field = "text"
+label_field = "label"
+id_field = "id"
+# The longest message in the corpus is 15 words. 32 positions leaves room for
+# [CLS], [SEP] and a longer example without truncating anything that exists.
+max_length = 32
+
+[split]
+# The split belongs to the corpus, not to the model, so both experiments below
+# inherit this section unchanged and read the same recorded file. Two models
+# scored on different test sets are not comparable, and nothing in a metrics
+# table would say so.
+name = "intents-v1"
+salt = "intents-v1"
+dir = "splits"
+method = "quantile"
+ratios = { train = 0.7, validation = 0.15, test = 0.15 }
+min_per_label_per_split = 3
+
+[train]
+seed = 1337
+batch_size = 8
+weight_decay = 0.01
+max_grad_norm = 1.0
+device = "cpu"
+out_dir = "runs"
+
+[early_stopping]
+monitor = "val_macro_f1"
+mode = "max"
+patience = 3
+min_delta = 0.002
+
+[tracking]
+enabled = false
+experiment = "intent-lora"
+uri = "runs/mlruns"
