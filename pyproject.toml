@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "model-finetune"
+# Pre-1.0 and staying there until a run on a real checkpoint is recorded. The
+# split format and the config keys are settled; the only numbers this repo has
+# produced came from a randomly initialised model, which is not a baseline.
+version = "0.2.3"
+description = "A LoRA fine-tune of a small sequence classifier, driven by config and seeded once"
+requires-python = ">=3.11"
+dependencies = [
+    "torch>=2.4.0",
+    "transformers>=4.44.0",
+    "peft>=0.13.0",
+    "scikit-learn>=1.5.0",
+    "mlflow>=2.16.0",
+    "numpy>=1.26.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==9.1.1", "ruff==0.16.10"]
+
+[project.scripts]
+ft = "finetune.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["finetune"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Config, split, metrics and early stopping are pure. The three that build a
+# model are marked, so the pure suite can be run on its own.
+markers = ["torch: builds a randomly initialised model in process"]
+
+[tool.ruff]
+line-length = 94
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["finetune"]

@@ -1,0 +1,20 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.DS_Store
+*.egg-info/
+build/
+dist/
+
+# Everything a run produces. The adapter, the per-epoch metrics, the confusion
+# tables and the MLflow database all live here and none of them is committed:
+# an artefact is tracked by its run, and a checkpoint in git history is a
+# checkpoint nobody can tell the provenance of.
+runs/
+
+# Hugging Face caches, if a real checkpoint is ever pulled.
+.cache/
+hf_cache/
