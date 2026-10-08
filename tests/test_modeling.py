@@ -7,6 +7,7 @@ import pytest
 from finetune.errors import ConfigError
 from finetune.modeling import (
     SPECIAL_TOKENS,
+    adapter_parameter_estimate,
     build_model,
     build_tokenizer,
     linear_module_names,
@@ -131,6 +132,34 @@ def test_resolve_targets_passes_the_names_through_when_they_all_match(smoke_conf
 
 
 @pytest.mark.torch
+def test_the_adapter_weighs_what_r_and_the_shapes_say_it_should(
+    smoke_config, corpus, recorded_split
+):
+    # Built from the training texts only, which is what a run does, so these
+    # are the same numbers `ft train configs/smoke.toml` prints.
+    train_ids = set(recorded_split.ids("train"))
+    train_texts = [e.text for e in corpus if e.id in train_ids]
+    tokenizer = build_tokenizer(smoke_config, train_texts)
+    model = wrap_with_lora(build_model(smoke_config, 4, tokenizer.vocab_size), smoke_config)
+    report = parameter_report(model)
+
+    # Two layers, two adapted projections each, r 4, width 32.
+    expected = adapter_parameter_estimate(
+        smoke_config,
+        hidden_size=smoke_config.model.hidden_size,
+        targets_per_layer=len(smoke_config.lora.target_modules),
+        layers=smoke_config.model.num_hidden_layers,
+    )
+    assert expected == 1024
+    assert report["adapter_parameters"] == expected
+    # Linear(32 -> 4) is 128 weights and 4 biases.
+    assert report["head_parameters"] == 132
+    assert report["trainable_parameters"] == 1156
+    assert report["total_parameters"] == 45320
+    assert report["trainable_percent"] == pytest.approx(2.5508, abs=0.0001)
+
+
+@pytest.mark.torch
 def test_fitting_the_vocabulary_on_the_whole_corpus_makes_a_bigger_model(
     smoke_config, corpus, recorded_split
 ):
@@ -153,20 +182,6 @@ def test_fitting_the_vocabulary_on_the_whole_corpus_makes_a_bigger_model(
     )
     assert leaked["total_parameters"] > honest["total_parameters"]
     assert leaked["trainable_parameters"] == honest["trainable_parameters"]
-
-
-@pytest.mark.torch
-def test_the_adapter_and_head_parameter_counts(smoke_config, corpus, recorded_split):
-    train_ids = set(recorded_split.ids("train"))
-    train_texts = [e.text for e in corpus if e.id in train_ids]
-    tokenizer = build_tokenizer(smoke_config, train_texts)
-    model = wrap_with_lora(build_model(smoke_config, 4, tokenizer.vocab_size), smoke_config)
-    report = parameter_report(model)
-
-    assert report["adapter_parameters"] == 1024
-    # Linear(32 -> 4) is 128 weights and 4 biases.
-    assert report["head_parameters"] == 132
-    assert report["trainable_parameters"] == 1156
 
 
 @pytest.mark.torch

@@ -208,10 +208,18 @@ def parameter_report(model: Any) -> dict[str, float | int]:
     }
 
 
-def adapter_parameter_estimate(cfg: Config, hidden_size: int, n_targets: int) -> int:
+def adapter_parameter_estimate(
+    cfg: Config, hidden_size: int, targets_per_layer: int, layers: int
+) -> int:
     """What the adapter should weigh, from r and the shapes, with no model.
 
     Each adapted linear of shape (d, d) gains an A of (r, d) and a B of (d, r),
-    so 2*r*d per module.
+    so 2*r*d per module, and every layer is adapted. Checked against the real
+    count in the tests, because a formula that disagrees with the model means
+    some of the target names matched nothing.
+
+    The layer count is in here because the first version of this function left
+    it out and returned 512 for a model whose adapter weighs 1024. Two layers
+    of two adapted projections is four modules, not two.
     """
-    return 2 * cfg.lora.r * hidden_size * n_targets
+    return 2 * cfg.lora.r * hidden_size * targets_per_layer * layers
